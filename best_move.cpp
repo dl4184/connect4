@@ -25,15 +25,7 @@ using namespace GameSolver::Connect4;
 using namespace std;
 //using position_t = uint64_t;
 
-/**
- * Get micro-second precision timestamp
- * uses unix gettimeofday function
- */
-unsigned long long getTimeMicrosec() {
-    timeval NOW;
-    gettimeofday(&NOW, NULL);
-    return NOW.tv_sec * 1000000LL + NOW.tv_usec;
-}
+
 
 /**
  Returns the best column to play for a given state of the board.
@@ -73,17 +65,12 @@ int best_col(Position &P, Solver &solver, bool weak) {
 
 /**
  * Main function.
- * First you decide if the first player will be the engine or the second.
- * After that you give numbers from 1 to 7 as an input, where numbers represent the column in which the token is played.
- * Program returns:
- *  0 - if the first player has won
- *  1 - if the second player has won
- *  2 - if there was a draw
+ * First the player gives a sequence of moves (with indecies from 1 to 7).
+ * Based on the board state engine outputs the best move.
  */
 int main(int argc, char **argv) {
-    string line;
+
     Position P;
-    int b_col, score;
     Solver solver;
     bool weak = false;
 
@@ -92,70 +79,27 @@ int main(int argc, char **argv) {
     string opening_book = "C:\\Magistrsko_delo\\connect4\\7x6.book";
     solver.loadBook(opening_book);
 
-    // change this to true if you want to see the board state
-    bool print_board = true;
 
-    // given the input we detirmine if the first player is the engine
-    cout << "Is first player engine? (y/n)" << endl;
-    string first_engine;
-    getline(cin, first_engine);
-    bool first = first_engine[0] == 'y';
+    // give the state of the board as move sequence (e.g. "4343" means player first played 4th colum then the second
+    // player played the 3rd column and so on). If there is only newline then the board is empty
+    cout << "State of the board" << endl;
+    string line;
+    getline(cin, line);
 
-
-    // if engine is first we play the first move
-    if (first){
-        b_col= best_col(P, solver, weak);
-        cout<<"Best move: "<<(b_col+1)<<endl;
-        P.playCol(b_col);
-
-        if(print_board){
-            P.print_board();
-            cout << endl;
-        }
-
-        score = solver.solve(P, weak);
-    }
-
-
-    // we read the standard input and play tokens accordingly
-    for (int l = 1; getline(cin, line); l++) {
+    if (line.size()>0){
         if (P.play(line) != line.size()) {
             int col = stoi(line) - 1;
             if (P.isWinningMove(col)) {
                 cout << "WIN" << endl;
-                return first;
+                return 1;
             }
-            else if(P.nbMoves()==42) // we played the last move and no one won -> it is a draw
-                return 2;
             else
-                cerr << "Line " << l << ": Invalid move " << (P.nbMoves() + 1) << " \"" << line << endl;
-        } else {
-            b_col= best_col(P, solver, weak);
-
-            if(print_board) {
-                P.print_board();
-                cout << endl;
-            }
-
-            cout<<"Best move: "<<(b_col+1)<<endl;
-            if (P.isWinningMove(b_col)) {
-                cout << "WIN" << endl;
-                return not first;
-            }
-
-            P.playCol(b_col);
-
-            // we played the last move and no one won -> it is a draw
-            if(P.nbMoves()==42)
-                return 2;
-
-
-            if(print_board) {
-                P.print_board();
-                cout << endl;
-            }
-
+                cerr << "Invalid move " << (P.nbMoves() + 1) << " \"" << line << endl;
         }
-
     }
+
+
+    int b_col = best_col(P, solver, weak);
+    cout << (b_col + 1) << endl;
+    return 0;
 }

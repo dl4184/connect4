@@ -11,11 +11,13 @@ ADD_LIBRARY(c4solver_dependencies STATIC
         TranspositionTable.hpp
         MoveSorter.hpp)
 
-ADD_EXECUTABLE(c4solver
-        main.cpp)
+ADD_EXECUTABLE(engine engine.cpp)
+ADD_EXECUTABLE(best_move best_move.cpp)
 
-
-TARGET_LINK_LIBRARIES(c4solver c4solver_dependencies)
+TARGET_LINK_LIBRARIES(engine c4solver_dependencies)
+TARGET_LINK_LIBRARIES(best_move c4solver_dependencies)
 
 INSTALL(TARGETS c4solver_dependencies DESTINATION lib)
-INSTALL(TARGETS c4solver DESTINATION bin)
+
+INSTALL(TARGETS engine DESTINATION bin)
+INSTALL(TARGETS best_move DESTINATION bin)
