@@ -19,11 +19,11 @@
 #include "Solver.hpp"
 #include <iostream>
 #include <sys/time.h>
-
+#include <vector>
+#include <algorithm>
 
 using namespace GameSolver::Connect4;
 using namespace std;
-//using position_t = uint64_t;
 
 
 
@@ -40,8 +40,18 @@ using namespace std;
 */
 int best_col(Position &P, Solver &solver, bool weak) {
     int b_col = -1;
-    int score = 43;
-    int tmp_score;
+    int best_ind = 90;
+    int tmp_ind, score;
+
+    vector<int>::iterator iter;
+    vector<int> score_table;
+
+    for (int i = 1; i < 43; i++)
+        score_table.push_back(i);
+    score_table.push_back(0);
+    for (int i = -42; i < 0; i++)
+        score_table.push_back(i);
+
 
     for (int col = 0; col < 7; col++) {
         if (P.isWinningMove(col)) {
@@ -50,11 +60,13 @@ int best_col(Position &P, Solver &solver, bool weak) {
         } else if (P.canPlay(col)) {
             P.playCol(col);
 
-            tmp_score = solver.solve(P, weak);
-            //cout<<"Score "<< col <<": "<<tmp_score<<endl;
-            if (tmp_score < score) {
+            score = solver.solve(P, weak);
+            iter = find(score_table.begin(), score_table.end(), score);
+            tmp_ind = distance(score_table.begin(), iter);
+
+            if (tmp_ind < best_ind) {
+                best_ind = tmp_ind;
                 b_col = col;
-                score = tmp_score;
             }
             P.undo(col);
         }
@@ -82,24 +94,26 @@ int main(int argc, char **argv) {
 
     // give the state of the board as move sequence (e.g. "4343" means player first played 4th colum then the second
     // player played the 3rd column and so on). If there is only newline then the board is empty
-    cout << "State of the board" << endl;
+    cout << "Provide the state of the board as a sequence of moves:" << endl;
     string line;
     getline(cin, line);
 
-    if (line.size()>0){
+    if (line.size() > 0) {
         if (P.play(line) != line.size()) {
             int col = stoi(line) - 1;
             if (P.isWinningMove(col)) {
                 cout << "WIN" << endl;
-                return 1;
+                return 0;
+            } else {
+                cerr << "Invalid move " << (P.nbMoves() + 1) << " \"" << line << " \"" << endl;
+                return -1;
             }
-            else
-                cerr << "Invalid move " << (P.nbMoves() + 1) << " \"" << line << endl;
         }
     }
 
 
     int b_col = best_col(P, solver, weak);
+    cout << "Best next move is:" << endl;
     cout << (b_col + 1) << endl;
-    return 0;
+    return (b_col + 1);
 }

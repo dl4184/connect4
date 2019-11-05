@@ -19,7 +19,8 @@
 #include "Solver.hpp"
 #include <iostream>
 #include <sys/time.h>
-
+#include <algorithm>
+#include <vector>
 
 using namespace GameSolver::Connect4;
 using namespace std;
@@ -37,8 +38,18 @@ using namespace std;
 */
 int best_col(Position &P, Solver &solver, bool weak) {
     int b_col = -1;
-    int score = 43;
-    int tmp_score;
+    int best_ind = 90;
+    int tmp_ind, score;
+
+    vector<int>::iterator iter;
+    vector<int> score_table;
+
+    for (int i = 1; i < 43; i++)
+        score_table.push_back(i);
+    score_table.push_back(0);
+    for (int i = -42; i < 0; i++)
+        score_table.push_back(i);
+
 
     for (int col = 0; col < 7; col++) {
         if (P.isWinningMove(col)) {
@@ -47,11 +58,13 @@ int best_col(Position &P, Solver &solver, bool weak) {
         } else if (P.canPlay(col)) {
             P.playCol(col);
 
-            tmp_score = solver.solve(P, weak);
-            //cout<<"Score "<< col <<": "<<tmp_score<<endl;
-            if (tmp_score < score) {
+            score = solver.solve(P, weak);
+            iter = find(score_table.begin(), score_table.end(), score);
+            tmp_ind = distance(score_table.begin(), iter);
+
+            if (tmp_ind < best_ind) {
+                best_ind = tmp_ind;
                 b_col = col;
-                score = tmp_score;
             }
             P.undo(col);
         }
@@ -92,12 +105,12 @@ int main(int argc, char **argv) {
 
 
     // if engine is first we play the first move
-    if (first){
-        b_col= best_col(P, solver, weak);
-        cout<<"Best move: "<<(b_col+1)<<endl;
+    if (first) {
+        b_col = best_col(P, solver, weak);
+        cout << "Best move: " << (b_col + 1) << endl;
         P.playCol(b_col);
 
-        if(print_board){
+        if (print_board) {
             P.print_board();
             cout << endl;
         }
@@ -110,34 +123,33 @@ int main(int argc, char **argv) {
             int col = stoi(line) - 1;
             if (P.isWinningMove(col)) {
                 cout << "WIN" << endl;
-                return first+1;
-            }
-            else if(P.nbMoves()==42) // we played the last move and no one won -> it is a draw
+                return first + 1;
+            } else if (P.nbMoves() == 42) // we played the last move and no one won -> it is a draw
                 return 3;
             else
                 cerr << "Line " << l << ": Invalid move " << (P.nbMoves() + 1) << " \"" << line << endl;
         } else {
-            b_col= best_col(P, solver, weak);
+            b_col = best_col(P, solver, weak);
 
-            if(print_board) {
+            if (print_board) {
                 P.print_board();
                 cout << endl;
             }
 
-            cout<<"Best move: "<<(b_col+1)<<endl;
+            cout << "Best move: " << (b_col + 1) << endl;
             if (P.isWinningMove(b_col)) {
                 cout << "WIN" << endl;
-                return (not first)+1;
+                return (not first) + 1;
             }
 
             P.playCol(b_col);
 
             // we played the last move and no one won -> it is a draw
-            if(P.nbMoves()==42)
+            if (P.nbMoves() == 42)
                 return 3;
 
 
-            if(print_board) {
+            if (print_board) {
                 P.print_board();
                 cout << endl;
             }
