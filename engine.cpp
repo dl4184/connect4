@@ -27,29 +27,16 @@ using namespace std;
 
 /**
  Returns the best column to play for a given state of the board.
-
  @params
     - Position &P - class storing a Connect 4 position
     - Solver &solver - class for determining the score of a postion using negamax
     - bool weak - weak solver - false
-
  @returns column (integer) that is the best play for a given state
-
 */
 int best_col(Position &P, Solver &solver, bool weak) {
     int b_col = -1;
-    int best_ind = 90;
-    int tmp_ind, score;
-
-    vector<int>::iterator iter;
-    vector<int> score_table;
-
-    for (int i = 1; i < 43; i++)
-        score_table.push_back(i);
-    score_table.push_back(0);
-    for (int i = -42; i < 0; i++)
-        score_table.push_back(i);
-
+    int score = 43;
+    int tmp_score;
 
     for (int col = 0; col < 7; col++) {
         if (P.isWinningMove(col)) {
@@ -58,19 +45,18 @@ int best_col(Position &P, Solver &solver, bool weak) {
         } else if (P.canPlay(col)) {
             P.playCol(col);
 
-            score = solver.solve(P, weak);
-            iter = find(score_table.begin(), score_table.end(), score);
-            tmp_ind = distance(score_table.begin(), iter);
-
-            if (tmp_ind < best_ind) {
-                best_ind = tmp_ind;
+            tmp_score = solver.solve(P, weak);
+            cout<<"Score for col. "<< (col+1) <<": "<<tmp_score<<endl;
+            if (tmp_score < score) {
                 b_col = col;
+                score = tmp_score;
             }
             P.undo(col);
         }
     }
     return b_col;
 }
+
 
 
 /**

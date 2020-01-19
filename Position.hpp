@@ -114,6 +114,19 @@ namespace GameSolver {
                 moves++;
             }
 
+            /**
+             * We set the state of the board instead of plying all moves.
+             *
+             * @param pos current position of bitboard
+             * @param mas  mask of bitboard
+             * @param mov number of moves made
+             */
+            void set_param(uint64_t pos, uint64_t mas, int mov){
+                current_position=(position_t) pos;
+                mask=(position_t) mas;
+                moves= mov;
+            }
+
 
             /**
              *  Undoes the last move played in the column given as a parameter.
